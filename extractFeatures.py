@@ -18,7 +18,7 @@ from sklearn.metrics import f1_score as fscore
 # except:
 #     progressInstalled = False
 
-sets = set(['a', 'b', 'c', 'd'])
+sets = set(['a','b','c','d','e'])
 src = "/home/ahsan/Desktop/kaggle bangla ai/numta"
 
 MAX_LABELS = 800
@@ -66,10 +66,11 @@ def loadData(size=180, mode='1', rng=0):
         #                       suffix='%(index)d/%(max)d - %(percent).1f%% - %(eta)ds')
         for i in labels['filename'][range(length)]:
             img = Image.open(src + "/training-{0}/".format(dataset) + i)
-            img = img.filter(ImageFilter.BLUR)
-            img = img.filter(ImageFilter.MinFilter(size=5))
-
             img = trim(img)
+            img = img.filter(ImageFilter.GaussianBlur(radius=2))
+            threshold = 191  
+            img = img.point(lambda p: p > threshold and 255)
+            img = img.filter(ImageFilter.MinFilter(size=5))
             # img = invertImageIfnecessary()
             img = img.resize((size, size))
             # img.show()

@@ -59,7 +59,7 @@ def splitMetrics(clf, X, y):
     y_train_pred = clf.predict(X_train)
 
     comparePrediction(y_test, y_test_pred)
-    comparePrediction(y_train, y_train_pred)
+    # comparePrediction(y_train, y_train_pred)
 
     print(accuracy(y_test, y_test_pred));
     print(accuracy(y_train, y_train_pred));

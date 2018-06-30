@@ -79,7 +79,7 @@ def main():
 	# print(hog_features.shape)
 
 
-	# clf = neuralNet()
+	clf = neuralNet()
 
 	splitMetrics(clf, features, labels)
 	print("done")

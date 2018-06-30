@@ -45,16 +45,16 @@ def getIndexFromCategorical(y):
 
 
 def individualNeuralNet():
-	clf =  MLPClassifier(hidden_layer_sizes=(32,16), activation='relu', 
+	clf =  MLPClassifier(hidden_layer_sizes=(256,128,32,16), activation='relu', 
 		    alpha=0.01, batch_size=64, early_stopping=True, 
 		    learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
-		    max_iter=100, tol=1e-8, verbose=False, validation_fraction=0.1)
+		    max_iter=1000, tol=1e-8, verbose=False, validation_fraction=0.1)
 
 	return clf
 
 
 def finalNeuralNet():
-	clf =  MLPClassifier(hidden_layer_sizes=(256,128,32,16), activation='relu', 
+	clf =  MLPClassifier(hidden_layer_sizes=(512,256,64,16), activation='relu', 
 		    alpha=0.001, batch_size=64, early_stopping=True, 
 		    learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
 		    max_iter=1500, tol=1e-8, verbose=False, validation_fraction=0.1)
@@ -125,7 +125,7 @@ def test(clf, finalClassifier, X_test):
 
 
 def ensemble(X, y):
-	X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.60)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.9)
 	clf, finalClassifier = train(X_train, y_train)
 	y_test_pred = test(clf, finalClassifier, X_test)
 	y_train_pred = test(clf, finalClassifier, X_train)
@@ -169,9 +169,9 @@ def main():
 
 	# print(hog_features.shape)
 
-	# ensemble(X, y)
+	ensemble(X, y)
 	# bagging(X, y)
-	adaboost(X,y)
+	# adaboost(X,y)
 
 	print("done")
 

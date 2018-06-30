@@ -36,9 +36,9 @@ def getIndexFromCategorical(y):
 
 def neuralNet():
     clf =  MLPClassifier(hidden_layer_sizes=(512,256,128,64,32), activation='relu', 
-                    alpha=0.001, batch_size=64, early_stopping=True, 
+                    alpha=0.005, batch_size=64, early_stopping=True, 
                     learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
-                    max_iter=1500, tol=1e-8, verbose=False, validation_fraction=0.1)
+                    max_iter=1000, tol=1e-8, verbose=False, validation_fraction=0.1)
 
     clf.classes_ = 10
 

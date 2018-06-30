@@ -1,8 +1,16 @@
 import pandas as pd
 import numpy as np
 import sys
-from PIL import Image, ImageChops
-import matplotlib.pyplot as plt
+from PIL import Image, ImageChops, ImageFilter
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score as fscore
+
+# from keras.models import Sequential
+# from keras.layers import Dense
+# from keras.layers import Dropout
+# from keras.utils import np_utils
+
 
 # progressInstalled = False
 # try:
@@ -10,10 +18,11 @@ import matplotlib.pyplot as plt
 # except:
 #     progressInstalled = False
 
-sets = set(['a','b','c','d','e'])
+sets = set(['a', 'b', 'c', 'd'])
 src = "/home/ahsan/Desktop/kaggle bangla ai/numta"
 
-MAX_LABELS = 1
+MAX_LABELS = 800
+
 
 
 
@@ -24,11 +33,12 @@ def trim(im):
     bbox = diff.getbbox()
     if bbox:
         return im.crop(bbox)
+    return im
 
 
 
 
-def loadData(size=180, mode='L', rng=0):
+def loadData(size=180, mode='1', rng=0):
     m = {'RGB': 3, 'L': 1, '1': 1}
     inputs = []
     outputs = []
@@ -36,6 +46,8 @@ def loadData(size=180, mode='L', rng=0):
     if datasets == []:
         datasets = ['a','b','c','d','e']
 
+
+    total_num = 0
     for dataset in datasets:
         labels = pd.read_csv(src + "/training-{0}.csv".format(dataset))
         if rng == 0:
@@ -54,28 +66,34 @@ def loadData(size=180, mode='L', rng=0):
         #                       suffix='%(index)d/%(max)d - %(percent).1f%% - %(eta)ds')
         for i in labels['filename'][range(length)]:
             img = Image.open(src + "/training-{0}/".format(dataset) + i)
+            img = img.filter(ImageFilter.BLUR)
+            img = img.filter(ImageFilter.MinFilter(size=5))
+
             img = trim(img)
-            img.show()
-            c = img.resize((size, size))
-            c = np.array(c.convert(mode), dtype=np.uint8).reshape((size,size))
+            # img = invertImageIfnecessary()
+            img = img.resize((size, size))
+            # img.show()
+
+            c = np.array(img.convert(mode), dtype=np.uint8).reshape((size,size))
             X[num, :, :] = c
             num = num + 1
             # if progressInstalled and (not num % max(1,(length / 200))):
             #     bar.index = num
             #     bar.update()
             # else:
-            #     if (not num % (length / 20)):
-            #         print("Loaded Training Set {0}:. ".format(dataset) + str(num) + "/" + str(length))
             if (not num % (length / 20)):
                 print("Loaded Training Set {0}:. ".format(dataset) + str(num) + "/" + str(length))
         # if progressInstalled:
         #     bar.finish()
+
+        total_num += num
+
         inputs.append(X)
         outputs.append(Y)
 
     X = np.concatenate(inputs,axis = 0)
     Y = np.concatenate(outputs,axis = 0)
-    return (X, Y)
+    return (X.reshape(total_num, -1), Y)
 
 
 def show_digit(x,label):
@@ -98,12 +116,38 @@ def vis_image(index, X, Y):
     return
 
 
-def main():
-    X,y = loadData();
+def saveData(X, y):
     print(X)
     print(y)
-    np.savetxt('X.txt', X)
-    np.savetxt('y.txt', y)
+    np.savetxt('X.txt', X, fmt = '%1.0f')
+    np.savetxt('y.txt', y, fmt = '%1.0f')
+
+
+
+def toCategorical(y, nb_classes = 10):
+    targets = y.reshape(-1)
+    one_hot_targets = np.eye(nb_classes)[targets]
+    return one_hot_targets
+
+
+def getIndexFromCategorical(y):
+    for i in range(len(y)):
+        if(y[i] == 1):
+            return i
+
+def main():
+    X,y = loadData(size=16);
+    # y = toCategorical(y=y, nb_classes = 10)
+
+    saveData(X,y)
+
+    # print(y.shape)
+    # score = cross_val_score(clf, X, y, cv=5)
+    # print(score)
+    # print("average", score.mean())
+    # print("stddev", score.std())
+
+    return
 
 
 

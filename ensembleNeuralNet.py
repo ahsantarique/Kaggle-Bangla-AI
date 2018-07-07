@@ -54,25 +54,7 @@ def individualNeuralNet():
 
 
 def finalNeuralNet():
-	clf =  MLPClassifier(hidden_layer_sizes=(32,16,8), activation='relu', 
-		    alpha=0.001, batch_size=64, early_stopping=True, 
-		    learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
-		    max_iter=1000, tol=1e-8, verbose=False, validation_fraction=0.1)
-
-	return clf
-
-
-def semifinalNeuralNet1():
-	clf =  MLPClassifier(hidden_layer_sizes=(16,8), activation='relu', 
-		    alpha=0.001, batch_size=64, early_stopping=True, 
-		    learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
-		    max_iter=500, tol=1e-8, verbose=False, validation_fraction=0.1)
-
-	return clf
-
-
-def semifinalNeuralNet2():
-	clf =  MLPClassifier(hidden_layer_sizes=(256,128,32,16), activation='relu', 
+	clf =  MLPClassifier(hidden_layer_sizes=(512,256,64,16), activation='relu', 
 		    alpha=0.001, batch_size=64, early_stopping=True, 
 		    learning_rate_init=0.001, solver='adam', learning_rate='adaptive', nesterovs_momentum=True, 
 		    max_iter=1500, tol=1e-8, verbose=False, validation_fraction=0.1)
@@ -90,10 +72,7 @@ def comparePrediction(y_true, y_pred):
 
 def train(X_train, y_train):
 	clf = [individualNeuralNet() for i in range(10)]
-	semifinalClassifier1 = semifinalNeuralNet1()
-	semifinalClassifier2 = semifinalNeuralNet2()
 	finalClassifier = finalNeuralNet()
-
 
 	y_train_pred_using_individual_nn = np.empty((len(X_train),0), int)
 	ycat_train = toCategorical(y_train)
@@ -108,28 +87,9 @@ def train(X_train, y_train):
 	# print(y_train_pred_using_individual_nn)
 
 
-	# X_train_final = np.append(y_train_pred_using_individual_nn, X_train, axis = 1)
+	X_train_final = np.append(y_train_pred_using_individual_nn, X_train, axis = 1)
 
-	semifinalClassifier1.fit(y_train_pred_using_individual_nn, y_train)
-
-	semifinalClassifier2.fit(X_train, y_train)
-
-	semifeature = np.empty((len(X_train),0), int)
-	y1 = semifinalClassifier1.predict(y_train_pred_using_individual_nn)
-	y2 = semifinalClassifier2.predict(X_train)
-
-
-	y1 = toCategorical(y1)
-	y2 = toCategorical(y2);
-
-	# print(np.array([y1[:,0]]).shape, np.array([y2[:,0]]).shape)
-
-	for i in range(10):
-		semifeature = np.append(semifeature, np.array([y1[:,i]]).transpose(), axis = 1)
-		semifeature = np.append(semifeature, np.array([y2[:,i]]).transpose(), axis = 1)
-
-
-	finalClassifier.fit(semifeature, y_train)
+	finalClassifier.fit(X_train_final, y_train)
 
 	np.savetxt('final_features_train.txt', y_train_pred_using_individual_nn, fmt = '%1.0f')
 	# print(X_train_final.shape)
@@ -140,64 +100,63 @@ def train(X_train, y_train):
 	# print(accuracy(y_test, y_test_pred));
 	# print(accuracy(y_train, y_train_pred));
 	print("training complete...")
-	return clf, semifinalClassifier1, semifinalClassifier2, finalClassifier
+	return clf, finalClassifier
 
 
 
-def test(clf, semifinalClassifier1, semifinalClassifier2, finalClassifier, X_test):
+def test(clf, finalClassifier, X_test):
 	y_test_pred_using_individual_nn = np.empty((len(X_test),0), int)
 
 	for i in range(10):
+		print(y_test_pred_using_individual_nn.shape)
+		print(np.array(clf[i].predict(X_test)).transpose().shape)
 		y_test_pred_using_individual_nn = np.append(y_test_pred_using_individual_nn, np.array([clf[i].predict(X_test)]).transpose(), axis = 1)
 
 
-
-	semifeature = np.empty((len(X_test),0), int)
-	y1 = semifinalClassifier1.predict(y_test_pred_using_individual_nn)
-	y2 = semifinalClassifier2.predict(X_test)
-
-
-	y1 = toCategorical(y1)
-	y2 = toCategorical(y2);
-
-	# print(np.array([y1[:,0]]).shape, np.array([y2[:,0]]).shape)
-
-	for i in range(10):
-		semifeature = np.append(semifeature, np.array([y1[:,i]]).transpose(), axis = 1)
-		semifeature = np.append(semifeature, np.array([y2[:,i]]).transpose(), axis = 1)
 	# print(y_train_pred_using_individual_nn)
 
 	np.savetxt('final_features_test.txt', y_test_pred_using_individual_nn, fmt = '%1.0f')
-	# X_test_final = np.append(y_test_pred_using_individual_nn, X_test,  axis = 1)
+	X_test_final = np.append(y_test_pred_using_individual_nn, X_test,  axis = 1)
 
-	return finalClassifier.predict(semifeature);
+	return finalClassifier.predict(X_test_final)
 
 
 
 
 
 def ensemble(X, y):
-	X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.99)
-	clf, semifinalClassifier1, semifinalClassifier2, finalClassifier = train(X_train, y_train)
-	y_test_pred = test(clf, semifinalClassifier1, semifinalClassifier2, finalClassifier, X_test)
-	# y_train_pred = test(clf, semifinalClassifier1, semifinalClassifier2, finalClassifier, X_train)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.9)
+	clf, finalClassifier = train(X_train, y_train)
+	y_test_pred = test(clf, finalClassifier, X_test)
+	y_train_pred = test(clf, finalClassifier, X_train)
 	comparePrediction(y_test_pred, y_test)
 	# comparePrediction(y_train, y_train_pred)
 
 	print(accuracy(y_test, y_test_pred));
-	# print(accuracy(y_train, y_train_pred));
-
-
-	joblib.dump(clf, 'clf.pkl') 
-	joblib.dump(semifinalClassifier1, 'semifinalClassifier1.pkl') 
-	joblib.dump(semifinalClassifier2, 'semifinalClassifier2.pkl') 
-	joblib.dump(finalClassifier, 'finalClassifier.pkl') 
+	print(accuracy(y_train, y_train_pred));
 
 	return
 
 
 
+def bagging(X,y):
+	seed = 7
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cart = DecisionTreeClassifier()
+	num_trees = 100
+	model = BaggingClassifier(base_estimator=cart, n_estimators=num_trees, random_state=seed)
+	results = model_selection.cross_val_score(model, X, y, cv=kfold)
+	print(results.mean(), results.std())
 
+
+
+def adaboost(X,y):
+	seed = 8
+	num_trees = 100
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	model = AdaBoostClassifier(n_estimators=num_trees, random_state=seed)
+	results = model_selection.cross_val_score(model, X, y, cv=kfold)
+	print(results.mean(), results.std())
 
 
 def main():

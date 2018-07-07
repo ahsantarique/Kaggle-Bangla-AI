@@ -18,7 +18,7 @@ from sklearn.metrics import f1_score as fscore
 # except:
 #     progressInstalled = False
 
-sets = set(['a','b','c','d','e'])
+sets = set(['a','b','c','d'])
 src = "/home/ahsan/Desktop/kaggle bangla ai/numta"
 
 MAX_LABELS = 800
@@ -73,7 +73,7 @@ def loadData(size=180, mode='1', rng=0):
             img = img.filter(ImageFilter.MinFilter(size=5))
             # img = invertImageIfnecessary()
             img = img.resize((size, size))
-            # img.show()
+            #img.show()
 
             c = np.array(img.convert(mode), dtype=np.uint8).reshape((size,size))
             X[num, :, :] = c
@@ -137,7 +137,7 @@ def getIndexFromCategorical(y):
             return i
 
 def main():
-    X,y = loadData(size=16);
+    X,y = loadData(size=32);
     # y = toCategorical(y=y, nb_classes = 10)
 
     saveData(X,y)
